@@ -129,6 +129,7 @@ function onOptionsSubmit(event) {
 
   drawCanvas(matrix, {
     graphDistance,
+    b: bValue,
     q: qValue,
     s: subdivisions,
     h,
@@ -137,7 +138,7 @@ function onOptionsSubmit(event) {
 
 function drawCanvas(
   matrix,
-  { graphDistance, s: graphUnitSubdivisions = 5_000, q, w = 2, h = 4 } = {}
+  { b, graphDistance, s: graphUnitSubdivisions = 5_000, q, w = 2, h = 4 } = {}
 ) {
   /** @type {HTMLCanvasElement} */
   const canvas = document.querySelector(".canvas");
@@ -166,6 +167,7 @@ function drawCanvas(
     subdivisions: graphUnitSubdivisions,
     w,
     h,
+    b,
   });
   console.timeEnd("drawing graph outline");
 
@@ -193,36 +195,80 @@ function drawCanvas(
 /**
  *
  * @param {CanvasRenderingContext2D} context
- * @param {OBject} params
+ * @param {Object} params
  */
 const drawGraphOutline = (
   context,
-  { cHeight, cWidth, center, baseY, unitS, graphDistance, subdivisions, w, h }
+  {
+    cHeight,
+    cWidth,
+    center,
+    baseY,
+    unitS,
+    graphDistance,
+    subdivisions,
+    w,
+    h,
+    b,
+  }
 ) => {
   context.strokeRect(center - cWidth * 0.4, baseY, cWidth * 0.8, cHeight * 0.8);
 
   /** @type {HTMLImageElement} */
-  const qSurfaceImg = document.querySelector('.q-surface-image');
-  context.drawImage(qSurfaceImg, center - unitS * subdivisions / 2, cHeight * 0.06, unitS * subdivisions, cHeight * 0.03);
+  const qSurfaceImg = document.querySelector(".q-surface-image");
+  context.drawImage(
+    qSurfaceImg,
+    center - (unitS * subdivisions) / 2,
+    cHeight * 0.06,
+    unitS * subdivisions,
+    cHeight * 0.03
+  );
 
   // Draw vertical separation lines
-  context.strokeStyle = "rgba(191, 191, 191, 0.5)";
   for (let x = -6 * w; x < 6 * w; x += 1 / graphDistance) {
+    context.strokeStyle =
+      x == Math.floor(x)
+        ? "rgba(191, 191, 191, 0.6)"
+        : "rgba(191, 191, 191, 0.4)";
+
     const baseX = center + x * unitS * subdivisions;
     if (baseX >= center - cWidth * 0.4 && baseX <= center + cWidth * 0.4) {
-      context.strokeRect(baseX, baseY, unitS, cHeight * 0.8);
+      context.strokeRect(
+        baseX,
+        baseY,
+        unitS,
+        x == Math.floor(x) ? cHeight * 0.81 : cHeight * 0.8,
+      );
+
+      if (x == Math.floor(x)) {
+        context.font = "15px sans-serif";
+        context.fillText(`${Math.abs(x) * b}`, baseX, cHeight * 0.915);
+      }
     }
   }
 
   // Draw horizontal separation lines
-  context.strokeStyle = "rgba(191, 191, 191, 0.4)";
   for (let z = 0; z < h; z += 1 / graphDistance) {
+    context.strokeStyle =
+      z == Math.floor(z)
+        ? "rgba(191, 191, 191, 0.6)"
+        : "rgba(191, 191, 191, 0.4)";
+
     context.strokeRect(
-      center - cWidth * 0.4,
+      center - cWidth * 0.41,
       baseY + z * unitS * subdivisions,
-      cWidth * 0.8,
-      unitS
+      z == Math.floor(z) ? cWidth * 0.81 : cWidth * 0.8,
+      unitS,
     );
+
+    if (z == Math.floor(z)) {
+      context.font = "15px sans-serif";
+      context.fillText(
+        `${Math.abs(z) * b}`,
+        center - cWidth * 0.415,
+        baseY + z * unitS * subdivisions,
+      );
+    }
   }
 };
 
@@ -272,7 +318,11 @@ const drawPoint = (
 
   const percent = effort / q;
 
-  if (x >= center - cWidth * 0.4 && x <= center + cWidth * 0.4 && percent > 0.09) {
+  if (
+    x >= center - cWidth * 0.4 &&
+    x <= center + cWidth * 0.4 &&
+    percent > 0.085
+  ) {
     const { r, g, b } = getColourGradientValue(
       [255, 0, 0],
       [0, 0, 255],
