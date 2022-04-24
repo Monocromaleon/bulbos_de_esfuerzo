@@ -255,7 +255,7 @@ const drawGraphOutline = (
         : "rgba(191, 191, 191, 0.4)";
 
     context.strokeRect(
-      center - cWidth * 0.41,
+      z == Math.floor(z) ? center - cWidth * 0.41: center - cWidth * 0.4,
       baseY + z * unitS * subdivisions,
       z == Math.floor(z) ? cWidth * 0.81 : cWidth * 0.8,
       unitS,
