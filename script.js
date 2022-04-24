@@ -172,14 +172,18 @@ function drawCanvas(
   // Starts drawing matrix
   const coordToPosition = getCoordToPosition(center, baseY, unitS);
   const colHalf = Math.floor(matrix[0].length / 2);
-  
+
   console.time("drawing matrix");
   for (let posZ in matrix) {
     for (let iX in matrix[posZ]) {
       const effort = matrix[posZ][iX];
       const posX = iX - colHalf;
 
-      drawPoint(context, {posX, posZ, effort, unitS, q}, coordToPosition);
+      drawPoint(
+        context,
+        { posX, posZ, effort, unitS, q, center, cWidth },
+        coordToPosition
+      );
     }
   }
 
@@ -199,42 +203,36 @@ const drawGraphOutline = (
 
   // Draw vertical separation lines
   context.strokeStyle = "rgba(191, 191, 191, 0.5)";
-  for (let x = (-6 * w); x < 6 * w; x += 1 / graphDistance) {
-    const baseX = center + (x * unitS * subdivisions);
+  for (let x = -6 * w; x < 6 * w; x += 1 / graphDistance) {
+    const baseX = center + x * unitS * subdivisions;
     if (baseX >= center - cWidth * 0.4 && baseX <= center + cWidth * 0.4) {
-      context.strokeRect(
-        baseX,
-        baseY,
-        unitS,
-        cHeight * 0.8
-      );
+      context.strokeRect(baseX, baseY, unitS, cHeight * 0.8);
     }
   }
-  
+
   // Draw horizontal separation lines
   context.strokeStyle = "rgba(191, 191, 191, 0.4)";
   for (let z = 0; z < h; z += 1 / graphDistance) {
     context.strokeRect(
       center - cWidth * 0.4,
-      baseY + (z * unitS * subdivisions),
+      baseY + z * unitS * subdivisions,
       cWidth * 0.8,
-      unitS,
+      unitS
     );
   }
 };
 
-
 /**
  * @typedef Coords
- * @prop {Number} x 
- * @prop {Number} y 
+ * @prop {Number} x
+ * @prop {Number} y
  */
 
 /**
- * 
- * @param {Number} center 
- * @param {Number} baseY 
- * @param {Number} unitS 
+ *
+ * @param {Number} center
+ * @param {Number} baseY
+ * @param {Number} unitS
  * @returns {function(Number, Number):Coords}
  */
 const getCoordToPosition = (center, baseY, unitS) => (x, z) => ({
@@ -249,24 +247,36 @@ const getColourGradientValue = (colour1, colour2, percent) => ({
 });
 
 /**
- * 
- * @param {CanvasRenderingContext2D} context 
- * @param {Object} params 
- * @param {Number} params.posX 
- * @param {Number} params.posZ 
- * @param {Number} params.effort 
- * @param {Number} params.unitS 
+ *
+ * @param {CanvasRenderingContext2D} context
+ * @param {Object} params
+ * @param {Number} params.center,
+ * @param {Number} params.cWidth,
+ * @param {Number} params.posX
+ * @param {Number} params.posZ
+ * @param {Number} params.effort
+ * @param {Number} params.unitS
  * @param {Number} params.q
- * @param {function(Number, Number):Coords} coordToPosition 
+ * @param {function(Number, Number):Coords} coordToPosition
  */
-const drawPoint = (context, { posX, posZ, effort, unitS, q }, coordToPosition) => {
+const drawPoint = (
+  context,
+  { center, cWidth, posX, posZ, effort, unitS, q },
+  coordToPosition
+) => {
   const { x, y } = coordToPosition(posX, posZ);
 
-  const { r, g, b } = getColourGradientValue([255, 0, 0], [0, 0, 255], (1 - effort / q));
+  if (x >= center - cWidth * 0.4 && x <= center + cWidth * 0.4) {
+    const { r, g, b } = getColourGradientValue(
+      [255, 0, 0],
+      [0, 0, 255],
+      1 - effort / q
+    );
 
-  context.beginPath();
-  context.fillStyle = `rgba(${r}, ${g}, ${b}, ${effort / q})`;
+    context.beginPath();
+    context.fillStyle = `rgba(${r}, ${g}, ${b}, ${effort / q})`;
 
-  context.rect(x, y, unitS, unitS);
-  context.fill();
+    context.rect(x, y, unitS, unitS);
+    context.fill();
+  }
 };
