@@ -116,7 +116,7 @@ function onOptionsSubmit(event) {
 
   const subdivisions = 200;
 
-  const h = 7;
+  const h = 8;
   const w = 7;
 
   const matrix = calcularMatrizDeEsfuerzos({
@@ -201,6 +201,10 @@ const drawGraphOutline = (
 ) => {
   context.strokeRect(center - cWidth * 0.4, baseY, cWidth * 0.8, cHeight * 0.8);
 
+  /** @type {HTMLImageElement} */
+  const qSurfaceImg = document.querySelector('.q-surface-image');
+  context.drawImage(qSurfaceImg, center - unitS * subdivisions / 2, cHeight * 0.06, unitS * subdivisions, cHeight * 0.03);
+
   // Draw vertical separation lines
   context.strokeStyle = "rgba(191, 191, 191, 0.5)";
   for (let x = -6 * w; x < 6 * w; x += 1 / graphDistance) {
@@ -266,15 +270,17 @@ const drawPoint = (
 ) => {
   const { x, y } = coordToPosition(posX, posZ);
 
-  if (x >= center - cWidth * 0.4 && x <= center + cWidth * 0.4) {
+  const percent = effort / q;
+
+  if (x >= center - cWidth * 0.4 && x <= center + cWidth * 0.4 && percent > 0.09) {
     const { r, g, b } = getColourGradientValue(
       [255, 0, 0],
       [0, 0, 255],
-      1 - effort / q
+      1 - percent
     );
 
     context.beginPath();
-    context.fillStyle = `rgba(${r}, ${g}, ${b}, ${effort / q})`;
+    context.fillStyle = `rgba(${r}, ${g}, ${b}, ${percent})`;
 
     context.rect(x, y, unitS, unitS);
     context.fill();

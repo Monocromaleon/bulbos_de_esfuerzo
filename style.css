@@ -68,3 +68,7 @@ input[type=submit] {
   height: 80vh;
   border: black 1px solid;
 }
+
+.q-surface-image {
+  display: none;
+}
