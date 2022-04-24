@@ -315,7 +315,7 @@ const drawGraphGradientLabel = (context, { cWidth, cHeight, baseY, q }) => {
   }
 
   context.strokeStyle = 'black';
-  context.strokeRect(cWidth * 0.9, baseY, cWidth * 0.03, cHeight * 0.8);
+  context.strokeRect(cWidth * 0.9, baseY, cWidth * 0.03, cHeight * 0.8 + unitH);
 };
 
 /**
