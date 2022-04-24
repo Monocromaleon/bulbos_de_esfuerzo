@@ -14,26 +14,44 @@
         Uniformemente Distribuidas Sobre una Franja Infinita
       </h1>
     </header>
-    <div class="input">
-      <span>Carga lineal, en kN/m<sup>2</sup></span
-      ><input type="text" placeholder="Carga lineal, en kN/m^2" />
-    </div>
-    <div class="input">
-      <span>Distancia B de la carga</span
-      ><input type="text" placeholder="Distancia B de la carga" />
-    </div>
-    <div class="input">
-      <label for="cars">Choose a car:</label>
-      <select name="cars" id="cars">
-        <option value="volvo">Volvo</option>
-        <option value="saab">Saab</option>
-        <option value="opel">Opel</option>
-        <option value="audi">Audi</option>
-      </select>
-    </div>
+    <form id="options">
+      <div class="col-left">
+        <div class="input">
+          <label for="q_force">Carga lineal (en kN/m<sup>2</sup>)</label>
+          <input
+            id="q_force"
+            name="q_force"
+            type="number"
+            placeholder="Carga lineal (en kN/m²)"
+          />
+        </div>
+        <div class="input">
+          <label for="b_distance">Distancia B de la carga (en m)</label>
+          <input
+            id="b_distance"
+            name="b_distance"
+            type="number"
+            placeholder="Distancia B de la carga (en m)"
+          />
+        </div>
+        <div class="input">
+          <label for="graph_distance"
+            >Tamaño de las divisiones de la gráfica</label
+          >
+          <select name="graph_distance" id="graph_distance">
+            <option value="2">B/2</option>
+            <option value="4">B/4</option>
+            <option value="8">B/8</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-right">
+        <input type="submit" value="Calcular" />
+      </div>
+    </form>
 
     <div class="main">
-      <div class="canvas"></div>
+      <canvas class="canvas"></canvas>
     </div>
 
     <footer>

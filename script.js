@@ -83,7 +83,7 @@ function calcularMatrizDeEsfuerzos({
   for (let z = 0; z < h * s; z++) {
     const row = [];
 
-    for (let x = 0; x < w * s; x++) {
+    for (let x = -w * s; x < w * s; x++) {
       row.push(obtenerEsfuerzoPorCoordenadas(b, (x * b) / s, (z * b) / s, q));
     }
 
@@ -91,7 +91,187 @@ function calcularMatrizDeEsfuerzos({
   }
 
   console.timeEnd("creating matrix");
-  console.log(matrix);
 
   return matrix;
 }
+
+window.onload = function () {
+  const optionsForm = document.getElementById("options");
+  optionsForm.onsubmit = onOptionsSubmit;
+};
+
+/**
+ * @param {SubmitEvent} event
+ */
+function onOptionsSubmit(event) {
+  event.preventDefault();
+
+  const bInput = document.querySelector("#b_distance");
+  const qInput = document.querySelector("#q_force");
+  const graphDistanceSelect = document.querySelector("#graph_distance");
+
+  const bValue = Number(bInput.value);
+  const qValue = Number(qInput.value);
+  const graphDistance = Number(graphDistanceSelect.value);
+
+  const subdivisions = 200;
+
+  const h = 7;
+  const w = 5;
+
+  const matrix = calcularMatrizDeEsfuerzos({
+    b: bValue,
+    q: qValue,
+    s: subdivisions,
+    h,
+    w,
+  });
+
+  drawCanvas(matrix, {
+    graphDistance,
+    q: qValue,
+    s: subdivisions,
+    h,
+  });
+}
+
+function drawCanvas(
+  matrix,
+  { graphDistance, s: graphUnitSubdivisions = 5_000, q, w = 2, h = 4 } = {}
+) {
+  /** @type {HTMLCanvasElement} */
+  const canvas = document.querySelector(".canvas");
+
+  const { width: cWidth, height: cHeight } = canvas.getBoundingClientRect();
+  canvas.width = cWidth;
+  canvas.height = cHeight;
+
+  const center = cWidth / 2 - cWidth * 0.05;
+  const baseY = cHeight * 0.1;
+
+  const unitS = (cHeight * 0.8) / (h * graphUnitSubdivisions);
+
+  const context = canvas.getContext("2d");
+
+  context.clearRect(0, 0, cWidth, cHeight);
+
+  console.time("drawing graph outline");
+  drawGraphOutline(context, {
+    cHeight,
+    cWidth,
+    center,
+    baseY,
+    unitS,
+    graphDistance,
+    subdivisions: graphUnitSubdivisions,
+    w,
+    h,
+  });
+  console.timeEnd("drawing graph outline");
+
+  // Starts drawing matrix
+  const coordToPosition = getCoordToPosition(center, baseY, unitS);
+  const colHalf = Math.floor(matrix[0].length / 2);
+  
+  console.time("drawing matrix");
+  for (let posZ in matrix) {
+    for (let iX in matrix[posZ]) {
+      const effort = matrix[posZ][iX];
+      const posX = iX - colHalf;
+
+      drawPoint(context, {posX, posZ, effort, unitS, q}, coordToPosition);
+    }
+  }
+
+  console.timeEnd("drawing matrix");
+}
+
+/**
+ *
+ * @param {CanvasRenderingContext2D} context
+ * @param {OBject} params
+ */
+const drawGraphOutline = (
+  context,
+  { cHeight, cWidth, center, baseY, unitS, graphDistance, subdivisions, w, h }
+) => {
+  context.strokeRect(center - cWidth * 0.4, baseY, cWidth * 0.8, cHeight * 0.8);
+
+  // Draw vertical separation lines
+  context.strokeStyle = "rgba(191, 191, 191, 0.5)";
+  for (let x = (-6 * w); x < 6 * w; x += 1 / graphDistance) {
+    const baseX = center + (x * unitS * subdivisions);
+    if (baseX >= center - cWidth * 0.4 && baseX <= center + cWidth * 0.4) {
+      context.strokeRect(
+        baseX,
+        baseY,
+        unitS,
+        cHeight * 0.8
+      );
+    }
+  }
+  
+  // Draw horizontal separation lines
+  context.strokeStyle = "rgba(191, 191, 191, 0.4)";
+  for (let z = 0; z < h; z += 1 / graphDistance) {
+    context.strokeRect(
+      center - cWidth * 0.4,
+      baseY + (z * unitS * subdivisions),
+      cWidth * 0.8,
+      unitS,
+    );
+  }
+};
+
+
+/**
+ * @typedef Coords
+ * @prop {Number} x 
+ * @prop {Number} y 
+ */
+
+/**
+ * 
+ * @param {Number} center 
+ * @param {Number} baseY 
+ * @param {Number} unitS 
+ * @returns {function(Number, Number):Coords}
+ */
+const getCoordToPosition = (center, baseY, unitS) => (x, z) => ({
+  x: center + x * unitS,
+  y: baseY + z * unitS,
+});
+
+const getColourGradientValue = (colour1, colour2, percent) => ({
+  r: colour1[0] + percent * (colour2[0] - colour1[0]),
+  g: colour1[1] + percent * (colour2[1] - colour1[1]),
+  b: colour1[2] + percent * (colour2[2] - colour1[2]),
+});
+
+/**
+ * 
+ * @param {CanvasRenderingContext2D} context 
+ * @param {Object} params 
+ * @param {Number} params.posX 
+ * @param {Number} params.posZ 
+ * @param {Number} params.effort 
+ * @param {Number} params.unitS 
+ * @param {Number} params.q
+ * @param {function(Number, Number):Coords} coordToPosition 
+ */
+const drawPoint = (context, { posX, posZ, effort, unitS, q }, coordToPosition) => {
+  const { x, y } = coordToPosition(posX, posZ);
+
+  const { r, g, b } = getColourGradientValue([255, 0, 0], [0, 0, 255], (1 - effort / q));
+
+  context.beginPath();
+  context.fillStyle = `rgba(
+    ${Math.floor(255 * (1 - effort / q))},
+    ${Math.floor(255 * (1 - effort / q))},
+    ${Math.floor(255 * (1 - effort / q))},
+    ${effort / q}
+  )`;
+
+  context.rect(x, y, unitS, unitS);
+  context.fill();
+};
