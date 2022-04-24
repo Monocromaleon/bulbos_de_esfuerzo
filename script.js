@@ -117,7 +117,7 @@ function onOptionsSubmit(event) {
   const subdivisions = 200;
 
   const h = 7;
-  const w = 5;
+  const w = 7;
 
   const matrix = calcularMatrizDeEsfuerzos({
     b: bValue,
@@ -243,9 +243,9 @@ const getCoordToPosition = (center, baseY, unitS) => (x, z) => ({
 });
 
 const getColourGradientValue = (colour1, colour2, percent) => ({
-  r: colour1[0] + percent * (colour2[0] - colour1[0]),
-  g: colour1[1] + percent * (colour2[1] - colour1[1]),
-  b: colour1[2] + percent * (colour2[2] - colour1[2]),
+  r: Math.floor(colour1[0] + percent * (colour2[0] - colour1[0])),
+  g: Math.floor(colour1[1] + percent * (colour2[1] - colour1[1])),
+  b: Math.floor(colour1[2] + percent * (colour2[2] - colour1[2])),
 });
 
 /**
@@ -265,12 +265,7 @@ const drawPoint = (context, { posX, posZ, effort, unitS, q }, coordToPosition) =
   const { r, g, b } = getColourGradientValue([255, 0, 0], [0, 0, 255], (1 - effort / q));
 
   context.beginPath();
-  context.fillStyle = `rgba(
-    ${Math.floor(255 * (1 - effort / q))},
-    ${Math.floor(255 * (1 - effort / q))},
-    ${Math.floor(255 * (1 - effort / q))},
-    ${effort / q}
-  )`;
+  context.fillStyle = `rgba(${r}, ${g}, ${b}, ${effort / q})`;
 
   context.rect(x, y, unitS, unitS);
   context.fill();
