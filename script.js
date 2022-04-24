@@ -171,6 +171,16 @@ function drawCanvas(
   });
   console.timeEnd("drawing graph outline");
 
+  console.timeEnd("drawing graph label");
+  drawGraphGradientLabel(context, {
+    cHeight,
+    cWidth,
+    baseY,
+    q,
+    subdivisions: graphUnitSubdivisions,
+  });
+  console.timeEnd("drawing graph label");
+
   // Starts drawing matrix
   const coordToPosition = getCoordToPosition(center, baseY, unitS);
   const colHalf = Math.floor(matrix[0].length / 2);
@@ -237,7 +247,7 @@ const drawGraphOutline = (
         baseX,
         baseY,
         unitS,
-        x == Math.floor(x) ? cHeight * 0.81 : cHeight * 0.8,
+        x == Math.floor(x) ? cHeight * 0.81 : cHeight * 0.8
       );
 
       if (x == Math.floor(x)) {
@@ -255,10 +265,10 @@ const drawGraphOutline = (
         : "rgba(191, 191, 191, 0.4)";
 
     context.strokeRect(
-      z == Math.floor(z) ? center - cWidth * 0.41: center - cWidth * 0.4,
+      z == Math.floor(z) ? center - cWidth * 0.41 : center - cWidth * 0.4,
       baseY + z * unitS * subdivisions,
       z == Math.floor(z) ? cWidth * 0.81 : cWidth * 0.8,
-      unitS,
+      unitS
     );
 
     if (z == Math.floor(z)) {
@@ -266,10 +276,46 @@ const drawGraphOutline = (
       context.fillText(
         `${Math.abs(z) * b}`,
         center - cWidth * 0.415,
-        baseY + z * unitS * subdivisions,
+        baseY + z * unitS * subdivisions
       );
     }
   }
+};
+
+/**
+ *
+ * @param {CanvasRenderingContext2D} context
+ * @param {Object} params
+ */
+const drawGraphGradientLabel = (context, { cWidth, cHeight, baseY, q }) => {
+  const unitH = cHeight * 0.008;
+  
+  for (let x = 100; x >= 0; x--) {
+    const percent = x / 100;
+    
+    const { r, g, b } = getColourGradientValue(
+      [255, 0, 0],
+      [0, 0, 255],
+      1 - percent
+    );
+
+    context.beginPath();
+    context.fillStyle = `rgba(${r}, ${g}, ${b}, ${percent})`;
+    context.rect(cWidth * 0.9, baseY + (100 - x) * unitH, cWidth * 0.03, unitH);
+    context.fill();
+
+    if (x % 10 === 0) {
+      context.fillStyle = `rgb(127, 127, 127, 0.6)`;
+      context.fillRect(cWidth * 0.93, baseY + (100 - x) * unitH, cWidth * 0.01, cHeight * 0.001);
+      
+      context.fillStyle = `black`;
+      context.font = `15px sans-serif`;
+      context.fillText(`${q * percent}${percent === 1 ? ' kN/m²' : ''}`, cWidth * 0.943, baseY + (100 - x) * unitH + cHeight * 0.005);
+    }
+  }
+
+  context.strokeStyle = 'black';
+  context.strokeRect(cWidth * 0.9, baseY, cWidth * 0.03, cHeight * 0.8);
 };
 
 /**
