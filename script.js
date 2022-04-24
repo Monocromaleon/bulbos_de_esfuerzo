@@ -300,12 +300,12 @@ const drawGraphGradientLabel = (context, { cWidth, cHeight, baseY, q }) => {
     );
 
     context.beginPath();
-    context.fillStyle = `rgba(${r}, ${g}, ${b}, ${percent})`;
+    context.fillStyle = `rgba(${r}, ${g}, ${b}, 1)`;
     context.rect(cWidth * 0.9, baseY + (100 - x) * unitH, cWidth * 0.03, unitH);
     context.fill();
 
     if (x % 10 === 0) {
-      context.fillStyle = `rgb(127, 127, 127, 0.6)`;
+      context.fillStyle = `rgba(191, 191, 191, 0.6)`;
       context.fillRect(cWidth * 0.93, baseY + (100 - x) * unitH, cWidth * 0.01, cHeight * 0.001);
       
       context.fillStyle = `black`;
@@ -376,7 +376,7 @@ const drawPoint = (
     );
 
     context.beginPath();
-    context.fillStyle = `rgba(${r}, ${g}, ${b}, ${percent})`;
+    context.fillStyle = `rgba(${r}, ${g}, ${b}, 1)`;
 
     context.rect(x, y, unitS, unitS);
     context.fill();
